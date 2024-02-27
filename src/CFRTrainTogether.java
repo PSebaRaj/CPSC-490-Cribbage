@@ -45,11 +45,12 @@ public class CFRTrainTogether {
                 System.out.println("Throwing nodes size: " + throwNodes.size());
                 System.out.println("Pegging nodes size: " + pegNodes.size());
             }
-            if (i > 0 && i % 250000 == 0) {
+//            if (i > 0 && i % 250000 == 0) {
+            if (i > 0 && i % 10000 == 0) {
                 int k = (i) / 1000;
                 try {
-                    NodeLoader.saveNodes("thrownodes_v2_" + k + "k.txt", throwNodes);
-                    NodeLoader.saveNodes("pegnodes_v2_" + k + "k.txt", pegNodes);
+                    NodeLoader.saveNodes("thrownodes_v7_" + k + "k.txt", throwNodes);
+                    NodeLoader.saveNodes("pegnodes_v7_" + k + "k.txt", pegNodes);
                 } catch (IOException e) {
                     e.printStackTrace();
                     System.err.println("Error saving nodes");

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+message CFRNode {
+  repeated float regret_sum = 1;
+  repeated float strategy = 2;
+  repeated float strategy_sum = 3;
+  int32 num_actions = 4;
+}
+
+message NodeMap {
+  // Define a map from string keys to CFRNode values
+  map<string, CFRNode> nodes = 1;
+}

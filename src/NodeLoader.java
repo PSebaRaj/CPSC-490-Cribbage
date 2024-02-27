@@ -3,10 +3,13 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.InflaterInputStream;
 
 // class for compressing strings
@@ -50,32 +53,42 @@ public class NodeLoader {
      * @throws IOException
      */
     public static HashMap<String, CFRNode> getNodes(String fileName, Class<?> cls, boolean sample) throws IOException {
-        FileInputStream fis = new FileInputStream(fileName);
-        // Added
-        ObjectInputStream in = new ObjectInputStream(fis);
-        HashMap<String, CFRNode> nodes = null;
-        try {
-            nodes = (HashMap<String, CFRNode>) in.readObject();
-            in.close();
-            fis.close();
-        } catch (ClassNotFoundException e) {
-            throw new IOException("ClassNotFoundException... unable to read in CFR Nodes as CFRNode objects");
+        HashMap<String, CFRNode> nodes = new HashMap<>();
+
+        // Read the serialized data from the file
+        InputStream input = new GZIPInputStream(new FileInputStream(fileName));
+        CFRNodeOuterClass.NodeMap nodeMap = CFRNodeOuterClass.NodeMap.parseFrom(input);
+        input.close();
+
+        // Iterate over entries in the NodeMap
+        for (Map.Entry<String, CFRNodeOuterClass.CFRNode> entry : nodeMap.getNodesMap().entrySet()) {
+            String key = entry.getKey();
+            CFRNodeOuterClass.CFRNode cfrNodeProto = entry.getValue();
+
+            // Create a new CFRNode instance using the parsed data
+            float[] regretSumArray = new float[cfrNodeProto.getRegretSumCount()];
+            for (int i = 0; i < cfrNodeProto.getRegretSumCount(); i++) {
+                regretSumArray[i] = cfrNodeProto.getRegretSum(i);
+            }
+            float[] strategyArray = new float[cfrNodeProto.getStrategyCount()];
+            for (int i = 0; i < cfrNodeProto.getStrategyCount(); i++) {
+                strategyArray[i] = cfrNodeProto.getStrategy(i);
+            }
+
+            float[] strategySumArray = new float[cfrNodeProto.getStrategySumCount()];
+            for (int i = 0; i < cfrNodeProto.getStrategySumCount(); i++) {
+                strategySumArray[i] = cfrNodeProto.getStrategySum(i);
+            }
+
+            CFRNode node = (cls == ThrowNode.class) ? new ThrowNode(sample) : new PegNode((byte) regretSumArray.length, sample);
+            node.regretSum = regretSumArray;
+            node.strategy = strategyArray;
+            node.strategySum =  strategySumArray;
+
+            // Put the node into the HashMap
+            nodes.put(key, node);
         }
-        // end added
-//        String nodeStr = StringCompressor.decompress(fis.readAllBytes());
-//        HashMap<String, Object[]> nodesLst = new Gson().fromJson(nodeStr, new TypeToken<HashMap<String, Object[]>>(){}.getType());
-//        HashMap<String, CFRNode> nodes = new HashMap<>();
-//        for (String key : nodesLst.keySet()) {
-//            Object[] n = nodesLst.get(key);
-//            float[] regretSum = convertToFloatArr(n[0]);
-//
-//            // create either new ThrowNode or PegNode, depending on what has been requested
-//            CFRNode node = (cls == ThrowNode.class) ? new ThrowNode(sample) : new PegNode((byte) regretSum.length, sample);
-//            node.regretSum = regretSum;
-//            node.strategySum =  convertToFloatArr(n[1]);
-//            node.strategy = convertToFloatArr(n[2]);
-//            nodes.put(key, node);
-//        }
+
         return nodes;
     }
 
@@ -111,16 +124,34 @@ public class NodeLoader {
      * @throws IOException
      */
     public static void saveNodes(String fileName, HashMap<String, ? extends CFRNode> nodes) throws IOException {
-//        String res = jsonify(nodes);
-        OutputStream os = new FileOutputStream(fileName);
-        // Added
-        ObjectOutputStream out = new ObjectOutputStream(os);
-        out.writeObject(nodes);
-        out.close();
-        os.close();
-        // end added
-//        os.write(StringCompressor.compress(res));
-        os.close();
+        CFRNodeOuterClass.NodeMap.Builder nodeMapBuilder = CFRNodeOuterClass.NodeMap.newBuilder();
+
+        // Populate NodeMap.Builder with data from HashMap
+        for (Map.Entry<String, ? extends CFRNode> entry : nodes.entrySet()) {
+            CFRNode node = entry.getValue();
+            CFRNodeOuterClass.CFRNode.Builder cfrNodeBuilder = CFRNodeOuterClass.CFRNode.newBuilder();
+
+            // write the data to the builder
+            for (float regretSumValue : node.regretSum) {
+                cfrNodeBuilder.addRegretSum(regretSumValue);
+            }
+            for (float strategyValue : node.strategy) {
+                cfrNodeBuilder.addStrategy(strategyValue);
+            }
+            for (float strategySumValue : node.strategySum) {
+                cfrNodeBuilder.addStrategySum(strategySumValue);
+            }
+            cfrNodeBuilder.setNumActions(node.numActions);
+
+            nodeMapBuilder.putNodes(entry.getKey(), cfrNodeBuilder.build());
+        }
+
+        CFRNodeOuterClass.NodeMap nodeMap = nodeMapBuilder.build();
+
+        // Write the serialized data to the file
+        OutputStream output = new GZIPOutputStream(new FileOutputStream(fileName));
+        nodeMap.writeTo(output);
+        output.close();
     }
 
     /**
