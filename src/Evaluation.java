@@ -45,7 +45,9 @@ public class Evaluation {
             System.out.println("You selected a CFR Thrower");
             System.out.println("Enter the filename for the nodes for this CFR throwing agent: ");
             String filename = scanner.nextLine();
-            thrower = new CFRThrower(game, thrower, nodeLoader.getThrowNodes(filename), throwType.equals("suited"));
+            System.out.println("Should the agent sample or maximize over NE? Enter sample or maximize: ");
+            String sample = scanner.nextLine();
+            thrower = new CFRThrower(game, thrower, nodeLoader.getThrowNodes(filename), throwType.equals("suited"), sample.equals("sample"));
         }
         else {
             System.out.println("You selected cpsc474.GreedyThrower");
@@ -77,7 +79,9 @@ public class Evaluation {
             System.out.println("You selected CFR Pegging.");
             System.out.println("Enter the filename for the nodes for this pegging agent: ");
             String filename = scanner.nextLine();
-            pegger = new CFRPeggingPolicy(pegger, nodeLoader.getPegNodes(filename), pegType.equals("complete"));
+            System.out.println("Should the agent sample or maximize over NE? Enter sample or maximize: ");
+            String sample = scanner.nextLine();
+            pegger = new CFRPeggingPolicy(pegger, nodeLoader.getPegNodes(filename), pegType.equals("complete"), sample.equals("sample"));
         }
         else {
             System.out.println("You selected Greedy Pegging");

@@ -16,7 +16,8 @@ public class CFRPegging {
         NodeLoader nodeLoader = new NodeLoader();
 
         // define keepPolicy using existing CFR throwing
-        KeepPolicy keepPolicy = new CFRThrower(game, new GreedyThrower(game), nodeLoader.getThrowNodes("thrownodes_v2_1000k.txt"), false);
+        // TODO: cannot assume sample as true
+        KeepPolicy keepPolicy = new CFRThrower(game, new GreedyThrower(game), nodeLoader.getThrowNodes("thrownodes_v2_1000k.txt"), false, true);
 
         if (starting_count > 0) {
             nodes = nodeLoader.getPegNodes("pegnodes_v2_" + starting_count + "k.txt");

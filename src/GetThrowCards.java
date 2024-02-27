@@ -16,7 +16,8 @@ public class GetThrowCards {
         Scanner scanner = new Scanner(System.in);
         NodeLoader nl = new NodeLoader();
         CribbageGame game = new CribbageGame();
-        CFRThrower thrower = new CFRThrower(game, new GreedyThrower(game), nl.getThrowNodes("thrownodes_v2_1000k.txt"), false);
+        // TODO: Cannot assume sampling
+        CFRThrower thrower = new CFRThrower(game, new GreedyThrower(game), nl.getThrowNodes("thrownodes_v2_1000k.txt"), false, true);
         while (true) {
             String input = scanner.nextLine();
             if (input.equals("quit")) break;

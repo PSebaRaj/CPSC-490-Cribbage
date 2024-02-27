@@ -2,7 +2,7 @@ public class ThrowNode extends CFRNode{
     // 0/1 representing whether dealer + sorted string of cards by value excluding
     int[][] combs = {{0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 3}, {2, 4}, {2, 5}, {3, 4}, {3, 5}, {4, 5}};
 
-    private boolean sample = false;
+    private boolean sample = true;
     public ThrowNode() {
         super((byte)15);
     }
@@ -12,8 +12,11 @@ public class ThrowNode extends CFRNode{
         this.sample = sample;
     }
 
-    public int[] getAction() {
-        if (this.sample) return combs[sampleBestAction()];
+    public int[] getAction(boolean sample) {
+        if (sample) {
+//            System.out.println("Sampling!");
+            return combs[sampleBestAction()];
+        }
         return combs[getBestAction()];
     }
 

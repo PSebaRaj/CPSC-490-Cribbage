@@ -1,5 +1,5 @@
 public class PegNode extends CFRNode {
-    private boolean sample = false;
+    private boolean sample = true;
     public PegNode(byte numActions) {
         super(numActions);
     }
@@ -9,8 +9,11 @@ public class PegNode extends CFRNode {
         this.sample = sample;
     }
 
-    public int getAction() {
-        if (this.sample) return sampleBestAction();
+    public int getAction(boolean sample) {
+        if (sample) {
+//            System.out.println("Sampling!");
+            return sampleBestAction();
+        }
         return getBestAction();
     }
 }

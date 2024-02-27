@@ -21,7 +21,8 @@ public class CFRThrowing {
 
         System.out.println("Starting CFR");
         for (int i = 0; i < 500 * 1000 + 1; i++){
-            cfr(1.0, 1.0, new CFRPeggingPolicy(new GreedyPegger(), peggingNodes, true), 0, null, null, null, false, null);
+            // TODO: set sampling to true for training?? What do we want
+            cfr(1.0, 1.0, new CFRPeggingPolicy(new GreedyPegger(), peggingNodes, true, true), 0, null, null, null, false, null);
 
             if (i%1000==0) {
                 System.out.println("***");

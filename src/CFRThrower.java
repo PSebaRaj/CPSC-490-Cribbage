@@ -13,13 +13,15 @@ public class CFRThrower implements KeepPolicy
     HashMap<String, ThrowNode> nodes;
 
     private boolean suited;
+    private boolean sample;
     static HashMap<String, Integer> rankToVal = new HashMap<>();
-    public CFRThrower(CribbageGame game, KeepPolicy backup, HashMap<String, ThrowNode> nodes, boolean suited)
+    public CFRThrower(CribbageGame game, KeepPolicy backup, HashMap<String, ThrowNode> nodes, boolean suited, boolean sample)
     {
         this.game = game;
         this.backup = backup;
         this.nodes = nodes;
         this.suited = suited;
+        this.sample = sample;
         populateRanks();
 
     }
@@ -53,7 +55,7 @@ public class CFRThrower implements KeepPolicy
 
         if (nodes.containsKey(infoSet)) {
             Collections.sort(myCards, new SortCards(getFlushSuit(myCards)));
-            int[] a = nodes.get(infoSet).getAction();
+            int[] a = nodes.get(infoSet).getAction(this.sample);
             return new CribbageHand(myCards).split(new ArrayList<>(Arrays.asList(a[0], a[1])));
         }
 

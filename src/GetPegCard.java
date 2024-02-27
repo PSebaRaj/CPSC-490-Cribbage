@@ -20,7 +20,8 @@ public class GetPegCard {
             String hand = input.split("\\|", -1)[0];
 
             if (nodes.containsKey(input)) {
-                int a = nodes.get(input).getAction();
+                // TODO: cannot force sample
+                int a = nodes.get(input).getAction(true);
                 String chosenCard = hand.substring(a, a+1);
                 System.out.println(chosenCard);
             }

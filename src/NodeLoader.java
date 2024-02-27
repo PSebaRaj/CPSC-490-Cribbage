@@ -51,20 +51,31 @@ public class NodeLoader {
      */
     public static HashMap<String, CFRNode> getNodes(String fileName, Class<?> cls, boolean sample) throws IOException {
         FileInputStream fis = new FileInputStream(fileName);
-        String nodeStr = StringCompressor.decompress(fis.readAllBytes());
-        HashMap<String, Object[]> nodesLst = new Gson().fromJson(nodeStr, new TypeToken<HashMap<String, Object[]>>(){}.getType());
-        HashMap<String, CFRNode> nodes = new HashMap<>();
-        for (String key : nodesLst.keySet()) {
-            Object[] n = nodesLst.get(key);
-            float[] regretSum = convertToFloatArr(n[0]);
-
-            // create either new ThrowNode or PegNode, depending on what has been requested
-            CFRNode node = (cls == ThrowNode.class) ? new ThrowNode(sample) : new PegNode((byte) regretSum.length, sample);
-            node.regretSum = regretSum;
-            node.strategySum =  convertToFloatArr(n[1]);
-            node.strategy = convertToFloatArr(n[2]);
-            nodes.put(key, node);
+        // Added
+        ObjectInputStream in = new ObjectInputStream(fis);
+        HashMap<String, CFRNode> nodes = null;
+        try {
+            nodes = (HashMap<String, CFRNode>) in.readObject();
+            in.close();
+            fis.close();
+        } catch (ClassNotFoundException e) {
+            throw new IOException("ClassNotFoundException... unable to read in CFR Nodes as CFRNode objects");
         }
+        // end added
+//        String nodeStr = StringCompressor.decompress(fis.readAllBytes());
+//        HashMap<String, Object[]> nodesLst = new Gson().fromJson(nodeStr, new TypeToken<HashMap<String, Object[]>>(){}.getType());
+//        HashMap<String, CFRNode> nodes = new HashMap<>();
+//        for (String key : nodesLst.keySet()) {
+//            Object[] n = nodesLst.get(key);
+//            float[] regretSum = convertToFloatArr(n[0]);
+//
+//            // create either new ThrowNode or PegNode, depending on what has been requested
+//            CFRNode node = (cls == ThrowNode.class) ? new ThrowNode(sample) : new PegNode((byte) regretSum.length, sample);
+//            node.regretSum = regretSum;
+//            node.strategySum =  convertToFloatArr(n[1]);
+//            node.strategy = convertToFloatArr(n[2]);
+//            nodes.put(key, node);
+//        }
         return nodes;
     }
 
@@ -100,9 +111,15 @@ public class NodeLoader {
      * @throws IOException
      */
     public static void saveNodes(String fileName, HashMap<String, ? extends CFRNode> nodes) throws IOException {
-        String res = jsonify(nodes);
+//        String res = jsonify(nodes);
         OutputStream os = new FileOutputStream(fileName);
-        os.write(StringCompressor.compress(res));
+        // Added
+        ObjectOutputStream out = new ObjectOutputStream(os);
+        out.writeObject(nodes);
+        out.close();
+        os.close();
+        // end added
+//        os.write(StringCompressor.compress(res));
         os.close();
     }
 

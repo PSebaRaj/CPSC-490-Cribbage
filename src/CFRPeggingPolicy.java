@@ -10,10 +10,12 @@ public class CFRPeggingPolicy implements PegPolicy {
     private boolean complete;
 
     private HashMap<String, Integer> rankToVal = new HashMap<>();
+    private boolean sample;
 
-    public CFRPeggingPolicy(PegPolicy backupPolicy, HashMap<String, PegNode> nodes, boolean complete) {
+    public CFRPeggingPolicy(PegPolicy backupPolicy, HashMap<String, PegNode> nodes, boolean complete, boolean sample) {
         this.nodes = nodes;
         this.complete = complete;
+        this.sample = sample;
         backup = backupPolicy;
         populateRanks();
     }
@@ -47,7 +49,7 @@ public class CFRPeggingPolicy implements PegPolicy {
         // use CFR node if we have one for this infoset
         if (nodes.containsKey(infoSet)) {
             Collections.sort(myCards, new SortCards());
-            int a = nodes.get(infoSet).getAction();
+            int a = nodes.get(infoSet).getAction(this.sample);
             CribbageCard chosenAction = myCards.get(a);
             return chosenAction;
         }
@@ -56,6 +58,9 @@ public class CFRPeggingPolicy implements PegPolicy {
         return backup.peg(cards, hist, scores, amDealer);
     }
 
+    public boolean isSampling() {
+        return this.sample;
+    }
 
 
     /**
