@@ -25,6 +25,7 @@ public class CFRTrainTogether {
         int[] scores = new int[] {0, 0};
         for (int i = 0; i < 10000 * 1000 + 1; i++){
 
+            // maybe I update policy after 10 or 50 iterations, rather than at every iteration
             PegPolicy pegPolicy = new CFRPeggingPolicy(
                     new GreedyPegger(), pegNodes, true, true
             );
@@ -46,11 +47,11 @@ public class CFRTrainTogether {
                 System.out.println("Pegging nodes size: " + pegNodes.size());
             }
 //            if (i > 0 && i % 250000 == 0) {
-            if (i > 0 && i % 10000 == 0) {
+            if (i > 0 && i % 100000 == 0) {
                 int k = (i) / 1000;
                 try {
-                    NodeLoader.saveNodes("thrownodes_v7_" + k + "k.txt", throwNodes);
-                    NodeLoader.saveNodes("pegnodes_v7_" + k + "k.txt", pegNodes);
+                    NodeLoader.saveNodes("thrownodes_v1t_" + k + "k.txt", throwNodes);
+                    NodeLoader.saveNodes("pegnodes_v1t_" + k + "k.txt", pegNodes);
                 } catch (IOException e) {
                     e.printStackTrace();
                     System.err.println("Error saving nodes");
