@@ -46,8 +46,8 @@ public class CFRTrainTogether {
                 System.out.println("Throwing nodes size: " + throwNodes.size());
                 System.out.println("Pegging nodes size: " + pegNodes.size());
             }
-//            if (i > 0 && i % 250000 == 0) {
-            if (i > 0 && i % 100000 == 0) {
+            if (i > 0 && i % 250000 == 0) {
+//            if (i > 0 && i % 100000 == 0) {
                 int k = (i) / 1000;
                 try {
                     NodeLoader.saveNodes("thrownodes_v1t_" + k + "k.txt", throwNodes);

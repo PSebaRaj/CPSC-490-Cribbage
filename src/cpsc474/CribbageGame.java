@@ -47,6 +47,19 @@ public class CribbageGame
 	return new CribbageHand[] {p0Hand, p1Hand, turnCard};
     }
 
+	public CribbageHand[] dealWithCardsPreviouslyPlayed(List<CribbageCard> cardsPlayed) {
+		//Deck<CardRank, Character, OrderedRanks, CharacterSuits> deck = new Deck<>(cardRanks, cardSuits, 1);
+		CribbageDeck deck = new CribbageDeck();
+		deck.remove(cardsPlayed);
+		deck.shuffle();
+		List<CribbageCard> bothHandsAndTurn = new ArrayList<>(deck.deal(dealCards * 2 + 1));
+		CribbageHand p0Hand = new CribbageHand(bothHandsAndTurn.subList(0, dealCards));
+		CribbageHand p1Hand = new CribbageHand(bothHandsAndTurn.subList(dealCards, dealCards * 2));
+		CribbageHand turnCard = new CribbageHand(bothHandsAndTurn.subList(2 * dealCards, 2 * dealCards + 1));
+
+		return new CribbageHand[] {p0Hand, p1Hand, turnCard};
+	}
+
     public int cardsToKeep()
     {
 	return keepCards;

@@ -82,6 +82,40 @@ public class Play {
         int dealer = 0;
 
 
+        System.out.println("Has the game already started? We currently only starting in the middle of the first round. Enter yes or no: ");
+        String started = scanner.nextLine();
+        CribbageHand ownCardsDiscarded = null;
+        CribbageHand theirCardsDiscarded = null;
+        boolean startedPlaying = false;
+        if (started.equals("yes")) {
+            System.out.println("Is the discard phase over? Enter yes or no: ");
+            String discardOver = scanner.nextLine();
+            if (discardOver.equals("yes")) {
+                startedPlaying = true;
+                System.out.println("Suits are S, D, H, C");
+                System.out.println("Card numbers are A, 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K");
+                System.out.println("Enter your first card discarded: ");
+                String rawOwnCard1 = scanner.nextLine();
+                CribbageCard ownCard1 = game.parseCard(rawOwnCard1);
+
+                System.out.println("Enter opponent's first card discarded: ");
+                String rawTheirCard1 = scanner.nextLine();
+                CribbageCard theirCard1 = game.parseCard(rawTheirCard1);
+
+                System.out.println("Enter your second card discarded: ");
+                String rawOwnCard2 = scanner.nextLine();
+                CribbageCard ownCard2 = game.parseCard(rawOwnCard2);
+
+                System.out.println("Enter opponent's second card discarded: ");
+                String rawTheirCard2 = scanner.nextLine();
+                CribbageCard theirCard2 = game.parseCard(rawTheirCard2);
+
+                ownCardsDiscarded = new CribbageHand(new ArrayList<>(List.of(ownCard1, ownCard2)));
+                theirCardsDiscarded = new CribbageHand(new ArrayList<>(List.of(theirCard1, theirCard2)));
+
+            }
+        }
+
         while (MoreArrays.max(scores) < 121)
         {
             if (dealer == playerNum) {
@@ -106,6 +140,10 @@ public class Play {
             for (int p = 0; p < 2; p++)
             {
                 if (p == playerNum) {
+//                    if (startedPlaying) {
+//                        startedPlaying = false;
+//                        keeps[p] = ownCardsDiscarded;
+//                    }
                     boolean correct = false;
                     while (!correct) {
                         System.out.println("These are your cards: " + cardsInPlay[p]);
