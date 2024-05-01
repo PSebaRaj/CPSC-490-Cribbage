@@ -5,7 +5,7 @@ For Project Proposal, Final Report, and Poster, see [here](https://zoo.cs.yale.e
 This project is built upon the work previously done to build a [counterfactual regret minimization agent for cribbage](https://github.com/msolonko/CSEC-491-Cribbage/tree/master).
 
 ## Compiling
-Compile through IntelliJ's build function. The `.iml` file is provided, and we compilation in two forms:
+Compile through IntelliJ's build function. The `.iml` file is provided, and we compile in two forms:
 
 ### Compiling to Run Natively
 You may build the agent utilizing IntelliJ's native 'Build Project' function. This will enable you to train the agents (separately or simultaneously) and play against the agent on your local machine. Simultaneous training is initiated through the `CFRTrainTogether` class, and playing against any combination of agents is initiated through the `Play` class.
@@ -29,4 +29,6 @@ Then utilize the `CalculateExpectedValue` class with the output of this training
 
 ## Running
 Utilize the `Play` class to play against any combination of agents available in this codebase. If you have selected CFR agent (thrower or pegger), please have the appropriate thrownodes and/or pegnodes ready to provide to the agent, stored in the project root folder.
+
+Remember, the git branch that you are in dictates positional play. To benchmark and play against greater game state unaware agents, utilize the `main` branch. To benchmark and play against greater game state aware agents, utilize the `positional-play` branch.
 
