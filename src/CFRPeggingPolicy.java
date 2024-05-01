@@ -49,14 +49,13 @@ public class CFRPeggingPolicy implements PegPolicy {
         // positional play
         // TODO: Do I put this here (technically outside CFR, does not affect CFR decision making, or within CFR, and change CFR to be score-considerate)
         // check if we have a card to peg that can immediately end the game
-        for (CribbageCard c : myCards) {
-            // TODO: NEED SOME WAY OF DETERMINING WHICH PLAYER I AM... as in do I use scores[0] or scores[1]
-//            System.out.println(Arrays.toString(hist.score(c, amDealer ? 0 : 1)));
-            int[] potentialScore = hist.score(c, amDealer ? 0 :  1);
-            if (potentialScore != null && potentialScore[0] + scores[1] >= 121) {
-                return c;
-            }
-        }
+//        for (CribbageCard c : myCards) {
+////            System.out.println(Arrays.toString(hist.score(c, amDealer ? 0 : 1)));
+//            int[] potentialScore = hist.score(c, amDealer ? 0 :  1);
+//            if (potentialScore != null && potentialScore[0] + scores[0] >= 121) {
+//                return c;
+//            }
+//        }
 
 
         // use CFR node if we have one for this infoset
@@ -64,6 +63,7 @@ public class CFRPeggingPolicy implements PegPolicy {
             Collections.sort(myCards, new SortCards());
             int a = nodes.get(infoSet).getAction(this.sample);
             CribbageCard chosenAction = myCards.get(a);
+//            System.out.println("NE ACTION:" + chosenAction);
             return chosenAction;
         }
 

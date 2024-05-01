@@ -76,7 +76,7 @@ public class CFRNode {
         float[] avgStrat = getAverageStrategy();
         int i = 0;
         float cumProb = 0.0f;
-        while (i < numActions - 1) {
+        while (i < numActions-1) {
             cumProb += avgStrat[i];
             if (cumProb > randNum) {
                 break;

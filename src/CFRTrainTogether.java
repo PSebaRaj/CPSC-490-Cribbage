@@ -11,6 +11,7 @@ public class CFRTrainTogether {
     static HashMap<String, PegNode> pegNodes = new HashMap<>();
     static HashMap<String, ThrowNode> throwNodes = new HashMap<>();
     static int[][] combs = {{0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 3}, {2, 4}, {2, 5}, {3, 4}, {3, 5}, {4, 5}};
+    static GamePositionList positionList = new GamePositionList();
 
     public static void main(String[] args) {
         populateRanks();
@@ -20,9 +21,15 @@ public class CFRTrainTogether {
 //        KeepPolicy keepPolicy = new CFRThrower(
 //                game, new GreedyThrower(game), throwNodes, false, true
 //        );
+//        positionList.add(new GamePosition(120, 120, 0), 0.0);
+//        positionList.add(new GamePosition(120, 120, 1), 0.0);
+        positionList.readFromFile("positions.ser");
 
+        int player1StartingScore = 120;
+        int player2StartingScore = 120;
 
-        int[] scores = new int[] {0, 0};
+        int[] scores = new int[] {player1StartingScore, player2StartingScore};
+
         for (int i = 0; i < 10000 * 1000 + 1; i++){
 
             // maybe I update policy after 10 or 50 iterations, rather than at every iteration
@@ -34,7 +41,7 @@ public class CFRTrainTogether {
             );
 
             cfrThrowing(
-                    1.0, 1.0, pegPolicy, 0, null, null, null, false, null
+                    1.0, 1.0, pegPolicy, 0, scores, null, null, null, false, null
             );
             cfrPegging(
                     null, 1.0, 1.0, scores, 0, keepPolicy, 0, null, 0
@@ -46,12 +53,12 @@ public class CFRTrainTogether {
                 System.out.println("Throwing nodes size: " + throwNodes.size());
                 System.out.println("Pegging nodes size: " + pegNodes.size());
             }
-            if (i > 0 && i % 250000 == 0) {
-//            if (i > 0 && i % 100000 == 0) {
+//            if (i > 0 && i % 250000 == 0) {
+            if (i > 0 && i % 100000 == 0) {
                 int k = (i) / 1000;
                 try {
-                    NodeLoader.saveNodes("thrownodes_v1t_" + k + "k.txt", throwNodes);
-                    NodeLoader.saveNodes("pegnodes_v1t_" + k + "k.txt", pegNodes);
+                    NodeLoader.saveNodes("thrownodes_v1t_" + k + "k" + player1StartingScore + "-" + player2StartingScore + ".txt", throwNodes);
+                    NodeLoader.saveNodes("pegnodes_v1t_" + k + "k" + player1StartingScore + "-" + player2StartingScore + ".txt", pegNodes);
                 } catch (IOException e) {
                     e.printStackTrace();
                     System.err.println("Error saving nodes");
@@ -112,7 +119,8 @@ public class CFRTrainTogether {
             int turn = player;
 
             // play out the rest of the game using backup greedy policy
-            while (!history.isTerminal()) {
+            while (!history.isTerminal() && (scores[0] < 121 && scores[1] < 121)) {
+//            while (!history.isTerminal()) {
                 CribbageCard play = pegger.peg(playerHands[turn], history, null, turn == dealer);
                 if (play != null) {
                     playerHands[turn] = playerHands[turn].remove(play);
@@ -135,6 +143,7 @@ public class CFRTrainTogether {
 
         // return score difference
         if (history != null && history.isTerminal()) {
+//        if ((history != null && history.isTerminal()) || (scores[0] >= 121 || scores[1] >= 121)) {
             int scoreDiff = scores[0] - scores[1];
             return scoreDiff;
         }
@@ -247,16 +256,20 @@ public class CFRTrainTogether {
                 strat_i = strategy[i];
             }
 
+            Double positionalPlayEV = positionList.get(new GamePosition(newScores[0], newScores[1], dealer));
+            if (positionalPlayEV == null) {
+                // call CFR recursively
+                if (player == 0) {
+                    util[i] = cfrPegging(nextHistory, p0 * strat_i, p1, newScores, roundNum, keepPolicy, dealer, new CribbageHand[]{nextHand0, nextHand1}, 1-player);
+                }
+                else {
+                    util[i] = -cfrPegging(nextHistory, p0, p1 * strat_i, newScores, roundNum, keepPolicy, dealer, new CribbageHand[]{nextHand0, nextHand1}, 1-player);
+                }
 
-            // call CFR recursively
-            if (player == 0) {
-                util[i] = cfrPegging(nextHistory, p0 * strat_i, p1, newScores, roundNum, keepPolicy, dealer, new CribbageHand[]{nextHand0, nextHand1}, 1-player);
+                nodeUtil += strat_i * util[i];
+            } else {
+                nodeUtil += strat_i * positionalPlayEV;
             }
-            else {
-                util[i] = -cfrPegging(nextHistory, p0, p1 * strat_i, newScores, roundNum, keepPolicy, dealer, new CribbageHand[]{nextHand0, nextHand1}, 1-player);
-            }
-
-            nodeUtil += strat_i * util[i];
         }
 
         // update regretSums
@@ -391,6 +404,7 @@ public class CFRTrainTogether {
             double p1,
             PegPolicy pegPolicy,
             int player,
+            int[] scores,
             CribbageHand keep0,
             CribbageHand throw0,
             CribbageHand hand1,
@@ -446,7 +460,7 @@ public class CFRTrainTogether {
                 CribbageHand keptCards = myCards.remove(throw1);
                 keptCards = keptCards.remove(throw2);
 
-                util[i] = -cfrThrowing(p0 * strategy[i], p1, pegPolicy, 1 - player, keptCards, throwCards, hand1, true, turn);
+                util[i] = -cfrThrowing(p0 * strategy[i], p1, pegPolicy, 1 - player, scores, keptCards, throwCards, hand1, true, turn);
 
                 nodeUtil += strategy[i] * util[i];
             }
@@ -457,7 +471,7 @@ public class CFRTrainTogether {
                 CribbageHand keptCards = hand1.remove(throw1);
                 keptCards = keptCards.remove(throw2);
 
-                util[i] = -play(pegPolicy, keep0, keptCards, throw0, throwCards, turn);
+                util[i] = -play(pegPolicy, keep0, keptCards, throw0, throwCards, turn, scores);
 
                 // negative because this is for second player
                 nodeUtil += strategy[i] * util[i];
@@ -498,9 +512,9 @@ public class CFRTrainTogether {
         return flushSuit;*/
     }
 
-    public static int play(PegPolicy peggingPolicy, CribbageHand keep0, CribbageHand keep1, CribbageHand throw0, CribbageHand throw1, CribbageCard turn)
+    public static int play(PegPolicy peggingPolicy, CribbageHand keep0, CribbageHand keep1, CribbageHand throw0, CribbageHand throw1, CribbageCard turn, int[] scores)
     {
-        int[] scores = new int[] {0, 0};
+//        int[] scores = new int[] {0, 0};
         int dealer = 0;
 
         // check for 2 for heels (turned card is a Jack)
@@ -511,7 +525,7 @@ public class CFRTrainTogether {
         int pegTurn = 1 - dealer;
         PeggingHistory history = new PeggingHistory(game);
         CribbageHand[] pegCards = new CribbageHand[] {keep0, keep1};
-        while (!history.isTerminal())
+        while (!history.isTerminal() && (scores[0] < 121 && scores[1] < 121))
         {
             // get player's played card
             CribbageCard play = peggingPolicy.peg(pegCards[pegTurn], history, pegTurn == 0 ? Arrays.copyOf(scores, scores.length) : MoreArrays.reverse(scores), pegTurn == dealer);
@@ -554,18 +568,20 @@ public class CFRTrainTogether {
             pegTurn = 1 - pegTurn;
         }
 
-        // score non-dealer's hand
-        int[] handScore = game.score(keep1, turn, false);
-        scores[1 - dealer] += handScore[0];
+        if (scores[0] < 121 && scores[1] < 121) {
+            // score non-dealer's hand
+            int[] handScore = game.score(keep1, turn, false);
+            scores[1 - dealer] += handScore[0];
 
-        // score dealer's hand
-        handScore = game.score(keep0, turn, false);
-        scores[dealer] += handScore[0];
+            // score dealer's hand
+            handScore = game.score(keep0, turn, false);
+            scores[dealer] += handScore[0];
 
-        // score crib
-        CribbageHand crib = new CribbageHand(throw0, throw1);
-        handScore = game.score(crib, turn, true);
-        scores[dealer] += handScore[0];
+            // score crib
+            CribbageHand crib = new CribbageHand(throw0, throw1);
+            handScore = game.score(crib, turn, true);
+            scores[dealer] += handScore[0];
+        }
 
         return scores[0] - scores[1];
 

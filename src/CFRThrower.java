@@ -13,7 +13,7 @@ public class CFRThrower implements KeepPolicy
     private boolean sample;
     static HashMap<String, Integer> rankToVal = new HashMap<>();
 
-    private List<List<Integer>> possibleThrows;
+    private List<List<Integer>> possibleThrows = new ArrayList<>();
 
     public CFRThrower(CribbageGame game, KeepPolicy backup, HashMap<String, ThrowNode> nodes, boolean suited, boolean sample)
     {
@@ -27,12 +27,14 @@ public class CFRThrower implements KeepPolicy
         List<Integer> indices = new ArrayList<>();
         for (int i = 0; i < game.cardsDealt(); i++)
         {
-            indices.add(i);
+            for (int j = i + 1; j < game.cardsDealt(); j++)
+            {
+                indices.add(i);
+                indices.add(j);
+                possibleThrows.add(new ArrayList<>(indices));
+                indices.clear();
+            }
         }
-
-        // make list of list of combinations of 2 indices for possible
-        // indices of cards to throw
-        IterTools.combinations(indices, game.cardsDealt() - game.cardsToKeep()).forEach(possibleThrows::add);
     }
 
     public void populateRanks() {
@@ -62,14 +64,13 @@ public class CFRThrower implements KeepPolicy
         List<CribbageCard> myCards = copyCards(cards.cards);
 
         // positional play
-        for (List<Integer> throwIndices : possibleThrows) {
-            CribbageHand[] currSplit = cards.split(throwIndices);
-            int netPoints = game.score(currSplit[0], null, false)[0] + (amDealer ? 1 : -1) * game.score(currSplit[1], null, true)[0];
-            // TODO: NEED SOME WAY OF DETERMINING WHICH PLAYER I AM... as in do I use scores[0] or scores[1]
-            if (netPoints + scores[1] >= 121) {
-                return new CribbageHand(myCards).split(new ArrayList<>(Arrays.asList(throwIndices.get(0), throwIndices.get(1))));
-            }
-        }
+//        for (List<Integer> throwIndices : this.possibleThrows) {
+//            CribbageHand[] currSplit = cards.split(throwIndices);
+//            int netPoints = game.score(currSplit[0], null, false)[0] + (amDealer ? 1 : -1) * game.score(currSplit[1], null, true)[0];
+//            if (scores != null && netPoints + scores[0] >= 121) {
+//                return new CribbageHand(myCards).split(new ArrayList<>(Arrays.asList(throwIndices.get(0), throwIndices.get(1))));
+//            }
+//        }
 
 
         String infoSet = getInfoSet(myCards, amDealer);
@@ -77,6 +78,7 @@ public class CFRThrower implements KeepPolicy
         if (nodes.containsKey(infoSet)) {
             Collections.sort(myCards, new SortCards(getFlushSuit(myCards)));
             int[] a = nodes.get(infoSet).getAction(this.sample);
+//            System.out.println("NE ACTION:" + Arrays.toString(new CribbageHand(myCards).split(new ArrayList<>(Arrays.asList(a[0], a[1])))));
             return new CribbageHand(myCards).split(new ArrayList<>(Arrays.asList(a[0], a[1])));
         }
 

@@ -292,6 +292,7 @@ public class CribbageGame
 	return new CribbageCard(rank, suit);
     }
 
+	private int bothMore118 = 0;
     public int[] play(CribbagePolicy p0, CribbagePolicy p1, Logger logger)
     {
 	int[] scores = new int[] {0, 0};
@@ -304,6 +305,8 @@ public class CribbageGame
 		logger.log("Dealing at " + Arrays.toString(scores));
 		// deal cards
 		CribbageHand[] cardsInPlay = deal();
+			System.out.println("Player 0: " + cardsInPlay[0]);
+		System.out.println("Player 1: " + cardsInPlay[1]);
 		handsPlayed++;
 		// turned card is first (only) element of third part of deal
 		CribbageCard turn = cardsInPlay[2].iterator().next();
@@ -331,6 +334,8 @@ public class CribbageGame
 				throw new RuntimeException("Invalid partition sizes " + Arrays.toString(keeps[p]));
 			    }
 		    }
+			System.out.println("Player 0 Keeps: " + Arrays.toString(keeps[0]));
+			System.out.println("Player 1 Keeps: " + Arrays.toString(keeps[1]));
 
 		// initialize pegging
 		int pegTurn = 1 - dealer;
@@ -417,6 +422,9 @@ public class CribbageGame
 
 		// change dealer
 		dealer = 1 - dealer;
+			if (scores[0] >= 118 && scores[1] >= 118 && scores[0] < winningScore && scores[1] < winningScore) {
+				bothMore118++;
+			}
 	    }
 	logger.log(Arrays.toString(scores));
 
@@ -449,6 +457,7 @@ public class CribbageGame
 		    }
 		results.update(points, result[1]);
 	    }
+	System.out.println("Both more than 118 #: " + bothMore118);
 
 	return results;
     }
